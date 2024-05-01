@@ -4,8 +4,9 @@
 [ext_resource type="Script" path="res://player/player.gd" id="1_7cwfm"]
 [ext_resource type="PackedScene" uid="uid://67ges1otvb8s" path="res://player/player_blaster.tscn" id="2_c4qy0"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_02ax8"]
-size = Vector2(7, 13)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_tf5s6"]
+radius = 3.0
+height = 14.5
 
 [sub_resource type="Animation" id="Animation_behbt"]
 length = 0.001
@@ -102,24 +103,18 @@ floor_constant_speed = true
 floor_snap_length = 2.0
 script = ExtResource("1_7cwfm")
 
-[node name="PlayerBlaster" parent="." instance=ExtResource("2_c4qy0")]
-show_behind_parent = true
-position = Vector2(2, -7)
-
 [node name="Sprite" type="Sprite2D" parent="."]
 position = Vector2(0, -11)
 texture = ExtResource("1_2s1m6")
 hframes = 12
 
-[node name="RemoteTransform2D" type="RemoteTransform2D" parent="Sprite"]
+[node name="PlayerBlaster" parent="Sprite" instance=ExtResource("2_c4qy0")]
+show_behind_parent = true
 position = Vector2(2, 4)
-remote_path = NodePath("../../PlayerBlaster")
-update_rotation = false
-update_scale = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -6)
-shape = SubResource("RectangleShape2D_02ax8")
+shape = SubResource("CapsuleShape2D_tf5s6")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
@@ -128,6 +123,7 @@ libraries = {
 
 [node name="Camera2D" type="Camera2D" parent="."]
 offset = Vector2(2.08165e-12, -8)
+zoom = Vector2(2, 2)
 
 [node name="CoyoteTimer" type="Timer" parent="."]
 wait_time = 0.15

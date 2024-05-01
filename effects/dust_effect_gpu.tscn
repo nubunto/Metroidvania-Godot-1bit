@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://bfhlmvvy3wbn1"]
+
+[ext_resource type="Texture2D" uid="uid://bh2suplyeas4u" path="res://effects/dust_effect.png" id="1_1lkdh"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_hcdny"]
+particles_animation = true
+particles_anim_h_frames = 3
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[node name="DustEffectGPU" type="GPUParticles2D"]
+material = SubResource("CanvasItemMaterial_hcdny")
+amount = 2
+texture = ExtResource("1_1lkdh")
