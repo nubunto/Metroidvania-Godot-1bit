@@ -1,0 +1,57 @@
+[gd_scene load_steps=9 format=3 uid="uid://cayyvm1u4aklv"]
+
+[ext_resource type="Script" path="res://enemies/walking_enemy.gd" id="1_40eva"]
+[ext_resource type="Texture2D" uid="uid://wsrrpx0va5c2" path="res://enemies/walking_enemy.png" id="2_fcwrd"]
+[ext_resource type="PackedScene" uid="uid://crw0gnpqes70e" path="res://collisions/hitbox.tscn" id="3_4x1cs"]
+[ext_resource type="PackedScene" uid="uid://dlwimfo5hvpjb" path="res://collisions/hurtbox.tscn" id="3_ic7rc"]
+[ext_resource type="PackedScene" uid="uid://behqgs0emmug1" path="res://stats.tscn" id="5_h5r1q"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tvctu"]
+size = Vector2(10, 10)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_o3n4q"]
+size = Vector2(14, 3)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ta4c7"]
+radius = 7.0
+
+[node name="WalkingEnemy" type="CharacterBody2D"]
+collision_layer = 8
+floor_constant_speed = true
+floor_snap_length = 2.0
+script = ExtResource("1_40eva")
+turns_at_ledges = false
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, -9)
+texture = ExtResource("2_fcwrd")
+flip_h = true
+hframes = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -6)
+shape = SubResource("RectangleShape2D_tvctu")
+
+[node name="FloorCast" type="RayCast2D" parent="."]
+position = Vector2(0, -5)
+target_position = Vector2(2.08165e-12, 12)
+
+[node name="Hitbox" parent="." instance=ExtResource("3_4x1cs")]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(0, -11.5)
+shape = SubResource("RectangleShape2D_o3n4q")
+
+[node name="Hurtbox" parent="." instance=ExtResource("3_ic7rc")]
+collision_layer = 64
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, -7)
+shape = SubResource("CircleShape2D_ta4c7")
+
+[node name="Stats" parent="." instance=ExtResource("5_h5r1q")]
+
+[connection signal="hurt" from="Hurtbox" to="." method="_on_hurtbox_hurt"]
+[connection signal="no_health" from="Stats" to="." method="_on_stats_no_health"]
+
+[editable path="Hurtbox"]

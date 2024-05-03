@@ -1,10 +1,18 @@
-[gd_scene load_steps=2 format=3 uid="uid://5bg6vgdeilfh"]
+[gd_scene load_steps=3 format=3 uid="uid://5bg6vgdeilfh"]
 
 [ext_resource type="Script" path="res://projectile.gd" id="1_rw4yi"]
+[ext_resource type="PackedScene" uid="uid://crw0gnpqes70e" path="res://collisions/hitbox.tscn" id="2_6tg45"]
 
 [node name="Projectile" type="Node2D"]
 script = ExtResource("1_rw4yi")
 
-[node name="VisibleOnScreenEnabler2D" type="VisibleOnScreenNotifier2D" parent="."]
+[node name="VisibilityNotifier" type="VisibleOnScreenNotifier2D" parent="."]
+position = Vector2(2.38419e-07, 2.38419e-07)
+scale = Vector2(0.4, 0.5)
 
-[connection signal="screen_exited" from="VisibleOnScreenEnabler2D" to="." method="_on_visible_on_screen_enabler_2d_screen_exited"]
+[node name="Hitbox" parent="." instance=ExtResource("2_6tg45")]
+collision_mask = 99
+
+[connection signal="screen_exited" from="VisibilityNotifier" to="." method="_on_visible_on_screen_enabler_2d_screen_exited"]
+
+[editable path="Hitbox"]

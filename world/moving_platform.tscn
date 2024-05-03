@@ -1,0 +1,78 @@
+[gd_scene load_steps=7 format=3 uid="uid://dieivo0rkchlk"]
+
+[ext_resource type="Texture2D" uid="uid://kmoet55rcedm" path="res://world/moving_platform.png" id="1_h2g35"]
+[ext_resource type="Curve2D" uid="uid://dkvq6leaasb5e" path="res://world/LeftRight.tres" id="2_cvmhy"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ihrn2"]
+size = Vector2(32, 10)
+
+[sub_resource type="Animation" id="Animation_oercm"]
+resource_name = "move"
+length = 5.0
+loop_mode = 2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Path2D/PathFollow2D:progress_ratio")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 1.0]
+}
+
+[sub_resource type="Animation" id="Animation_fdybx"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Path2D/PathFollow2D:progress_ratio")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_jin6w"]
+_data = {
+"RESET": SubResource("Animation_fdybx"),
+"move": SubResource("Animation_oercm")
+}
+
+[node name="MovingPlatform" type="Node2D"]
+
+[node name="AnimatableBody2D" type="AnimatableBody2D" parent="."]
+position = Vector2(-80, 0)
+collision_layer = 2
+collision_mask = 0
+
+[node name="Sprite2D" type="Sprite2D" parent="AnimatableBody2D"]
+texture = ExtResource("1_h2g35")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AnimatableBody2D"]
+position = Vector2(2.08165e-12, 2.08165e-12)
+shape = SubResource("RectangleShape2D_ihrn2")
+one_way_collision = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_jin6w")
+}
+autoplay = "move"
+speed_scale = 0.5
+
+[node name="Path2D" type="Path2D" parent="."]
+curve = ExtResource("2_cvmhy")
+
+[node name="PathFollow2D" type="PathFollow2D" parent="Path2D"]
+position = Vector2(-80, 0)
+rotates = false
+
+[node name="RemoteTransform2D" type="RemoteTransform2D" parent="Path2D/PathFollow2D"]
+remote_path = NodePath("../../../AnimatableBody2D")
+update_rotation = false

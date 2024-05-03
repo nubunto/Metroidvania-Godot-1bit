@@ -1,8 +1,10 @@
-[gd_scene load_steps=10 format=3 uid="uid://cg3crattb302s"]
+[gd_scene load_steps=17 format=3 uid="uid://cg3crattb302s"]
 
 [ext_resource type="Texture2D" uid="uid://ce1wg3ai5xbx6" path="res://player/player.png" id="1_2s1m6"]
 [ext_resource type="Script" path="res://player/player.gd" id="1_7cwfm"]
 [ext_resource type="PackedScene" uid="uid://67ges1otvb8s" path="res://player/player_blaster.tscn" id="2_c4qy0"]
+[ext_resource type="PackedScene" uid="uid://bkb7s4rn4nc8f" path="res://world/player_camera.tscn" id="4_8qtus"]
+[ext_resource type="PackedScene" uid="uid://dlwimfo5hvpjb" path="res://collisions/hurtbox.tscn" id="4_abrmm"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_02ax8"]
 size = Vector2(7, 13)
@@ -89,17 +91,135 @@ tracks/1/keys = {
 }]
 }
 
+[sub_resource type="Animation" id="Animation_0qwm5"]
+resource_name = "wall_slide"
+length = 0.1
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [10]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_fx1dn"]
 _data = {
 "RESET": SubResource("Animation_behbt"),
 "idle": SubResource("Animation_6rntw"),
 "jump": SubResource("Animation_x6p27"),
-"run": SubResource("Animation_fuwt0")
+"run": SubResource("Animation_fuwt0"),
+"wall_slide": SubResource("Animation_0qwm5")
 }
 
+[sub_resource type="Animation" id="Animation_lh8ie"]
+resource_name = "blink"
+length = 1.3
+step = 0.05
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [false, true, false, true, false, true, false, true, false, true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("PlayerBlaster:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [false, true, false, true, false, true, false, true, false, true]
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Hurtbox")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1.3),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [true],
+"method": &"@is_invincible_setter"
+}, {
+"args": [false],
+"method": &"@is_invincible_setter"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_eyuyx"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("PlayerBlaster:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Hurtbox")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [false],
+"method": &"@is_invincible_setter"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_kkehi"]
+_data = {
+"RESET": SubResource("Animation_eyuyx"),
+"blink": SubResource("Animation_lh8ie")
+}
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mew8s"]
+size = Vector2(4, 8)
+
 [node name="Player" type="CharacterBody2D"]
+z_index = 10
+collision_layer = 4
+collision_mask = 3
 floor_constant_speed = true
 floor_snap_length = 2.0
+safe_margin = 0.1
 script = ExtResource("1_7cwfm")
 
 [node name="PlayerBlaster" parent="." instance=ExtResource("2_c4qy0")]
@@ -126,9 +246,31 @@ libraries = {
 "": SubResource("AnimationLibrary_fx1dn")
 }
 
-[node name="Camera2D" type="Camera2D" parent="."]
-offset = Vector2(2.08165e-12, -8)
+[node name="BlinkingAnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_kkehi")
+}
+
+[node name="PlayerCamera" parent="." instance=ExtResource("4_8qtus")]
 
 [node name="CoyoteTimer" type="Timer" parent="."]
 wait_time = 0.15
 one_shot = true
+
+[node name="FireRateTimer" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+
+[node name="DropTimer" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+
+[node name="Hurtbox" parent="." instance=ExtResource("4_abrmm")]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, -7)
+shape = SubResource("RectangleShape2D_mew8s")
+debug_color = Color(0.920363, 0.281131, 3.44064e-07, 0.42)
+
+[connection signal="timeout" from="DropTimer" to="." method="_on_drop_timer_timeout"]
+[connection signal="hurt" from="Hurtbox" to="." method="_on_hurtbox_hurt"]
