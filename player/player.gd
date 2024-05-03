@@ -143,6 +143,7 @@ func jump_check():
 	if is_on_floor():
 		air_jump = true
 	if is_on_floor() or coyote_jump_timer.time_left > 0.0:
+		air_jump = true
 		if Input.is_action_just_pressed("jump"):
 			jump(jump_force)
 	if not is_on_floor():
@@ -172,7 +173,7 @@ func update_animations(input_axis):
 func _on_drop_timer_timeout():
 	set_collision_mask_value(2, true)
 
-func _on_hurtbox_hurt(hitbox):
+func _on_hurtbox_hurt(_hitbox):
 	Events.add_screenshake.emit(3, 0.25)
 	PlayerStats.health -= 1
 	blinking_animation_player.play("blink")

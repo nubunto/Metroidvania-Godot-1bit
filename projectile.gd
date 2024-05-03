@@ -25,3 +25,9 @@ func explode():
 func explode_no_screenshake():
 	Utils.instantiate_scene_on_world(ExplosionEffectScene, global_position)
 	call_deferred("queue_free")
+
+func _on_hitbox_hit(_hurtbox):
+	self.explode_no_screenshake()
+
+func _on_hitbox_hit_body(_body):
+	self.explode_no_screenshake()
