@@ -3,14 +3,18 @@ extends CharacterBody2D
 @export var acceleration = 512
 @export var max_fall_velocity = 80
 @export var max_velocity = 64
-@export var friction = 256
+@export var friction = 1024
 @export var air_friction = 64
 @export var gravity = 200
 @export var jump_force = 128
 @export var wall_slide_speed = 42
 @export var max_wall_slide_speed = 128
+@export var dash_max_speed = 350
+
 
 var air_jump = false
+var can_dash = true
+var dash_direction = 1
 var state: Callable = move_state
 
 @onready var animation_player = $AnimationPlayer
@@ -22,6 +26,7 @@ var state: Callable = move_state
 @onready var player_camera = $PlayerCamera
 @onready var hurtbox = $Hurtbox
 @onready var blinking_animation_player = $BlinkingAnimationPlayer
+@onready var dash_cooldown_timer = $DashCooldownTimer
 
 const DustEffectScene = preload("res://effects/dust_effect_copied.tscn")
 const JumpEffectScene = preload("res://effects/jump_effect.tscn")
@@ -39,6 +44,46 @@ func create_dust_effect():
 
 func create_wall_jump_effect(effect_position):
 	return Utils.instantiate_scene_on_world(WallJumpEffectScene, effect_position)
+
+func dash_state(delta):
+	var dash_max_speed = 250
+	velocity.x = dash_max_speed * dash_direction
+	move_and_slide()
+	dash_cooldown_timer.start()
+	can_dash = false
+	state = end_of_dash_state
+
+func air_dash_state(delta):
+	velocity.x = (dash_max_speed * 0.75) * dash_direction
+	velocity.y = 0
+	move_and_slide()
+	can_dash = false
+	state = end_of_air_dash_state
+
+func end_of_air_dash_state(delta):
+	
+	if velocity.x == 0:
+		state = move_state
+		return
+	velocity.x = move_toward(velocity.x, 0, 750 * delta)
+	move_and_slide()
+
+func end_of_dash_state(delta):
+	var input_axis = Input.get_axis("move_left", "move_right")
+	if input_axis != 0 or velocity.x == 0:
+		state = move_state
+		return
+	apply_friction(delta, input_axis)
+	move_and_slide()
+
+func dash_check():
+	if Input.is_action_just_pressed("dash") and can_dash:
+		dash_direction = Input.get_axis("move_left", "move_right")
+		animation_player.play("dash")
+		if is_on_floor():
+			state = dash_state
+		else:
+			state = air_dash_state
 
 func wall_slide_state(delta):
 	var wall_normal = get_wall_normal()
@@ -70,7 +115,6 @@ func wall_jump_check(wall_axis):
 		var effect = create_wall_jump_effect(wall_jump_effect_position)
 		effect.scale.x = wall_axis
 
-
 func wall_check():
 	if not is_on_floor() and is_on_wall():
 		state = wall_slide_state
@@ -83,6 +127,8 @@ func apply_wall_slide_gravity(delta):
 	velocity.y = move_toward(velocity.y, speed, gravity * delta)
 
 func move_state(delta):
+	if is_on_floor() and not can_dash:
+		can_dash = true
 	apply_gravity(delta)
 
 	var input_axis = Input.get_axis("move_left", "move_right")
@@ -104,6 +150,7 @@ func move_state(delta):
 		coyote_jump_timer.start()
 	
 	wall_check()
+	dash_check()
 
 func _physics_process(delta):
 	state.call(delta)
@@ -177,3 +224,6 @@ func _on_hurtbox_hurt(_hitbox):
 	Events.add_screenshake.emit(3, 0.25)
 	PlayerStats.health -= 1
 	blinking_animation_player.play("blink")
+
+func _on_dash_timer_timeout():
+	can_dash = true
