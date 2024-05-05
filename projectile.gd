@@ -20,11 +20,11 @@ func _on_visible_on_screen_enabler_2d_screen_exited():
 func explode():
 	Utils.instantiate_scene_on_world(ExplosionEffectScene, global_position)
 	Events.add_screenshake.emit(0.4, 0.2)
-	call_deferred("queue_free")
+	queue_free.call_deferred()
 
 func explode_no_screenshake():
 	Utils.instantiate_scene_on_world(ExplosionEffectScene, global_position)
-	call_deferred("queue_free")
+	queue_free.call_deferred()
 
 func _on_hitbox_hit(_hurtbox):
 	self.explode_no_screenshake()

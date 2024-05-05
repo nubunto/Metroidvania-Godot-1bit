@@ -7,6 +7,9 @@ signal no_health
 signal health_changed(new_value: int)
 signal max_health_changed(new_value: int)
 
+func connect_to_hurtbox(hurtbox: Hurtbox):
+	hurtbox.hurt.connect(self.take_damage)
+
 func set_max_health(value: int):
 	max_health = value
 	max_health_changed.emit(max_health)
@@ -16,3 +19,6 @@ func set_health(value: int):
 	health_changed.emit(health)
 	if health <= 0:
 		no_health.emit()
+
+func take_damage(hitbox: Hitbox):
+	self.health -= hitbox.damage

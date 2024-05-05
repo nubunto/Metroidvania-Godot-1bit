@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://dijdy2fgcjyyh"]
+
+[ext_resource type="PackedScene" uid="uid://dt1jaysnkwt6m" path="res://effects/dust_effect.tscn" id="1_xuvs8"]
+
+[node name="EnemyDeathEffect" instance=ExtResource("1_xuvs8")]
+amount = 24
+emission_shape = 1
+emission_sphere_radius = 8.0
+spread = 180.0
+initial_velocity_min = 8.0
+initial_velocity_max = 16.0

@@ -51,6 +51,9 @@ shape = SubResource("CircleShape2D_ta4c7")
 
 [node name="Stats" parent="." instance=ExtResource("5_h5r1q")]
 
+[node name="DeathEffectLocation" type="Marker2D" parent="."]
+position = Vector2(0, -6)
+
 [connection signal="hurt" from="Hurtbox" to="." method="_on_hurtbox_hurt"]
 [connection signal="no_health" from="Stats" to="." method="_on_stats_no_health"]
 
