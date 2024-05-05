@@ -27,6 +27,7 @@ var state: Callable = move_state
 @onready var hurtbox = $Hurtbox
 @onready var blinking_animation_player = $BlinkingAnimationPlayer
 @onready var dash_cooldown_timer = $DashCooldownTimer
+@onready var dash_momentum_timer = $DashMomentumTimer
 
 const DustEffectScene = preload("res://effects/dust_effect_copied.tscn")
 const JumpEffectScene = preload("res://effects/jump_effect.tscn")
@@ -48,37 +49,51 @@ func create_wall_jump_effect(effect_position):
 func dash_state(delta):
 	var dash_max_speed = 250
 	velocity.x = dash_max_speed * dash_direction
+	velocity.y = 0
 	move_and_slide()
-	dash_cooldown_timer.start()
-	can_dash = false
 	state = end_of_dash_state
 
 func air_dash_state(delta):
 	velocity.x = (dash_max_speed * 0.75) * dash_direction
 	velocity.y = 0
 	move_and_slide()
-	can_dash = false
 	state = end_of_air_dash_state
 
 func end_of_air_dash_state(delta):
-	
-	if velocity.x == 0:
+	if velocity.x == sign(velocity.x) * 100:
+		buffer_momentum()
 		state = move_state
 		return
-	velocity.x = move_toward(velocity.x, 0, 750 * delta)
+	if is_on_floor():
+		buffer_momentum()
+		state = move_state
+		return
+	velocity.x = move_toward(velocity.x, sign(velocity.x) * 100, 700 * delta)
 	move_and_slide()
 
 func end_of_dash_state(delta):
-	var input_axis = Input.get_axis("move_left", "move_right")
-	if input_axis != 0 or velocity.x == 0:
+	if velocity.x == sign(velocity.x) * 100:
+		buffer_momentum()
 		state = move_state
 		return
-	apply_friction(delta, input_axis)
+	if is_on_floor():
+		buffer_momentum()
+		state = move_state
+		return
+	velocity.x = move_toward(velocity.x, sign(velocity.x) * 100, 700 * delta)
 	move_and_slide()
+
+func buffer_momentum():
+	dash_momentum_timer.start()
 
 func dash_check():
 	if Input.is_action_just_pressed("dash") and can_dash:
 		dash_direction = Input.get_axis("move_left", "move_right")
+		if dash_direction == 0:
+			state = move_state
+			return
+		can_dash = false
+		dash_cooldown_timer.start()
 		animation_player.play("dash")
 		if is_on_floor():
 			state = dash_state
@@ -93,13 +108,13 @@ func wall_slide_state(delta):
 	wall_jump_check(wall_normal.x)
 	apply_wall_slide_gravity(delta)
 	move_and_slide()
-	wall_detach(delta)
+	wall_detach(delta, wall_normal.x)
 
-func wall_detach(delta):
-	if Input.is_action_just_pressed("move_right"):
+func wall_detach(delta, wall_x_axis):
+	if Input.is_action_just_pressed("move_right") and wall_x_axis == 1:
 		velocity.x = acceleration * delta
 		state = move_state
-	if Input.is_action_just_pressed("move_left"):
+	if Input.is_action_just_pressed("move_left") and wall_x_axis == -1:
 		velocity.x = -acceleration * delta
 		state = move_state
 	
@@ -127,8 +142,6 @@ func apply_wall_slide_gravity(delta):
 	velocity.y = move_toward(velocity.y, speed, gravity * delta)
 
 func move_state(delta):
-	if is_on_floor() and not can_dash:
-		can_dash = true
 	apply_gravity(delta)
 
 	var input_axis = Input.get_axis("move_left", "move_right")
@@ -167,6 +180,8 @@ func apply_gravity(delta: float):
 		velocity.y = move_toward(velocity.y, max_fall_velocity, gravity * delta)
 
 func apply_horizontal_force(delta, input_axis):
+	if dash_momentum_timer.time_left > 0:
+		return
 	if Input.is_action_pressed("move_right") and Input.is_action_pressed("move_left"):
 		if is_on_floor():
 			return
@@ -227,3 +242,4 @@ func _on_hurtbox_hurt(_hitbox):
 
 func _on_dash_timer_timeout():
 	can_dash = true
+	
